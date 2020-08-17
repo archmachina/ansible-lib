@@ -1,0 +1,49 @@
+---
+
+##
+# Apply base rules
+
+- name: iptables - allow loopback
+  iptables:
+    chain: INPUT
+    in_interface: lo+
+    jump: ACCEPT
+
+- name: iptables - allow established and related
+  iptables:
+    chain: INPUT
+    ctstate: [ 'ESTABLISHED', 'RELATED' ]
+    jump: ACCEPT
+    action: insert
+
+- name: iptables - allow tcp/22
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 22
+    jump: ACCEPT
+
+- name: iptables - allow tcp/4000
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 4000
+    jump: ACCEPT
+
+- name: iptables - Default INPUT policy - DROP
+  iptables:
+    chain: INPUT
+    policy: DROP
+
+- name: iptables - Default FORWARD policy - DROP
+  iptables:
+    chain: FORWARD
+    policy: DROP
+
+- name: iptables - Allow ICMP
+  iptables:
+    chain: INPUT
+    jump: ACCEPT
+    protocol: icmp
+
+...

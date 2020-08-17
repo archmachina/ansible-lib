@@ -1,0 +1,58 @@
+---
+
+# Default to port 22
+
+##
+# Defaults
+
+- name: Default jump port
+  when: jump_port is not defined
+  set_fact:
+    jump_port: 4000
+
+- name: Default jump user
+  when: jump_user is not defined
+  set_fact:
+    jump_user: noverisadmin
+
+##
+# Check for jump host
+
+- name: Check jump host
+  when: jump_host is defined
+  set_fact:
+    ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p {{ jump_user }}@{{ jump_host }} -p {{ jump_port }} "'
+
+- debug:
+    msg: "SSH common args {{ansible_ssh_common_args }}"
+  when: ansible_ssh_common_args is defined
+
+
+##
+# Try connecting using default port
+
+- set_fact:
+    ansible_ssh_port: 4000
+
+- name: Trying with default port "{{ ansible_ssh_port }}"
+  raw: /bin/hostname
+  ignore_errors: "yes"
+  register: alternate_ssh
+
+
+##
+# Check for error and fall back to other port
+
+- set_fact:
+    ansible_ssh_port: 22
+  when: alternate_ssh is defined and
+        alternate_ssh.unreachable is defined and
+        alternate_ssh.unreachable == true
+
+- meta: clear_host_errors
+
+- raw: /bin/hostname
+
+
+
+...

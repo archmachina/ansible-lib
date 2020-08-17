@@ -1,0 +1,50 @@
+---
+
+##
+# Remote management
+
+- name: "Trusted Keys ({{ user }}): Ensure user exists"
+  user:
+    name: "{{ user }}"
+    create_home: yes
+    append: true
+    state: present
+
+- name: "Trusted Keys ({{ user }}): Ensure group exists"
+  group:
+    name: "{{ user }}"
+    state: present
+
+- name: "Trusted Keys ({{ user }}): Home dir permissions"
+  file:
+    path: "~{{ user }}"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    state: directory
+    mode: "0751"
+
+- name: "Trusted Keys ({{ user }}): .ssh directory permissions"
+  file:
+    path: "~{{ user }}/.ssh"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0711"
+    state: directory
+
+- name: "Trusted Keys ({{ user }}): Add public key"
+  lineinfile:
+    dest: "~{{ user }}/.ssh/authorized_keys"
+    line: "{{ host_key }}"
+    create: yes
+  loop: "{{ user_keys }}"
+  loop_control:
+    loop_var: host_key
+
+- name: "Trusted Keys ({{ user }}): authorized_keys permissions"
+  file:
+    path: "~{{ user }}/.ssh/authorized_keys"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0600"
+
+...

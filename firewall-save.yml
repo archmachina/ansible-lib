@@ -1,0 +1,15 @@
+---
+
+- name: Save iptables configuration (Ubuntu)
+  shell: /sbin/iptables-save > /etc/iptables/rules.v4
+  when:
+    ansible_distribution == "Ubuntu"
+  changed_when: false
+
+- name: Save iptables configuration (CentOS)
+  shell: /sbin/iptables-save > /etc/sysconfig/iptables
+  when:
+    ansible_distribution == "CentOS"
+  changed_when: false
+
+...

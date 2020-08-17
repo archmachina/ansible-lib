@@ -1,0 +1,35 @@
+---
+
+##
+# Defaults
+
+- name: Set default ansible ssh port
+  set_fact:
+    ansible_ssh_port: 4000
+  when: ansible_ssh_port is not defined
+
+- name: check ssh port connection status
+  wait_for:
+    connect_timeout: 20
+    timeout: 20
+    port: "{{ item }}"
+    state: "started"
+    host: "{{ inventory_hostname }}"
+  delegate_to: "localhost"
+  ignore_errors: yes
+  register: ssh_port_connection_status
+  loop:
+    - 22
+    - "{{ ansible_ssh_port }}"
+
+- name: set port
+  set_fact:
+    ansible_ssh_port: "{{ item.port }}"
+  when: "item.port is defined"
+  with_items: "{{ ssh_port_connection_status.results }}"
+
+- name: Accept connections to new hosts
+  set_fact:
+    ansible_ssh_common_args: " {{ ansible_ssh_common_args|default('') }} -o StrictHostKeyChecking=accept-new "
+
+...
