@@ -5,8 +5,12 @@
 
 - name: Set default ansible ssh port
   set_fact:
-    ansible_ssh_port: 4000
+    ansible_ssh_port: 22
   when: ansible_ssh_port is not defined
+
+- name: Set desired ssh port
+  set_fact:
+    desired_ansible_ssh_port: "{{ ansible_ssh_port }}"
 
 - name: check ssh port connection status
   wait_for:
@@ -14,12 +18,13 @@
     timeout: 20
     port: "{{ item }}"
     state: "started"
-    host: "{{ inventory_hostname }}"
+    host: "{{ ansible_ssh_host }}"
   delegate_to: "localhost"
   ignore_errors: yes
   register: ssh_port_connection_status
   loop:
     - 22
+    - 4000
     - "{{ ansible_ssh_port }}"
 
 - name: set port
